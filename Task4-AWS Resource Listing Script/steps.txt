@@ -1,0 +1,43 @@
+📄 README.md
+# AWS Resource Listing Script
+
+## Overview
+This script lists AWS resources (EC2 instances, S3 buckets, DynamoDB tables) 
+for a given service and region using boto3.
+
+## Requirements
+- Python 3.x
+- boto3 (`pip install boto3`)
+- AWS CLI configured with credentials (`aws configure`)
+
+## Usage
+```bash
+python3 list_resources.py <service> <region>
+
+Supported Services
+
+ec2 → Lists all EC2 instance IDs in the region.
+
+s3 → Lists all S3 bucket names (global).
+
+dynamodb → Lists all DynamoDB tables in the region.
+
+Examples
+# List EC2 instances in us-east-1
+python3 list_resources.py ec2 us-east-1
+
+# List S3 buckets
+python3 list_resources.py s3 us-east-1
+
+# List DynamoDB tables in eu-west-1
+python3 list_resources.py dynamodb eu-west-1
+
+Error Handling
+
+Invalid service → prints supported services.
+
+Invalid/unsupported region → prints an error.
+
+Missing credentials → prompts user to configure AWS CLI.
+
+Permissions issues → prints AWS error details.

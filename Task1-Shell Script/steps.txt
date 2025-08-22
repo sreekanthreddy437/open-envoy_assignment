@@ -1,0 +1,61 @@
+Task 1: Shell Script
+Create a shell script named backup_logs.sh:
+
+#!/bin/bash
+
+# Set date in YYYYMMDD format
+DATE=$(date +%Y%m%d)
+
+# Define backup directory
+BACKUP_DIR="$HOME/backup"
+
+# Create backup directory if not exists
+mkdir -p "$BACKUP_DIR"
+
+# Find and compress all .log files into a tar.gz archive
+tar -czf "$BACKUP_DIR/logs-$DATE.tar.gz" $(find . -type f -name "*.log")
+
+# Optional: Print confirmation
+echo "Logs archived to $BACKUP_DIR/logs-$DATE.tar.gz"
+
+Explanation:
+
+date +%Y%m%d → gets the current date in YYYYMMDD.
+
+mkdir -p → ensures the backup directory exists.
+
+find . -type f -name "*.log" → recursively finds all .log files.
+
+tar -czf → compresses them into a single logs-<date>.tar.gz.
+
+Make it executable:
+
+chmod +x backup_logs.sh
+
+
+Run manually to test:
+
+./backup_logs.sh
+
+Task 2: Cron Job
+
+Edit the crontab:
+
+crontab -e
+
+
+Add this line:
+
+0 0 * * * /path/to/backup_logs.sh
+
+Explanation:
+
+0 0 * * * → runs at midnight every day.
+
+/path/to/backup_logs.sh → full path to your script (important, cron needs absolute paths).
+
+✅ With this setup:
+
+Every midnight, all .log files will be compressed into logs-YYYYMMDD.tar.gz
+
+The archive will be stored inside ~/backup.

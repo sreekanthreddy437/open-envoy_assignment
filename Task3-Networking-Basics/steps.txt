@@ -1,0 +1,114 @@
+1. Setting up a VPC for a Simple Web Application
+
+A basic web application architecture in AWS needs:
+
+A VPC (isolated private network).
+
+At least two subnets (public + private).
+
+An Internet Gateway (IGW) for public access.
+
+Route Tables for directing traffic.
+
+Security Groups (SGs) for instance-level firewalling.
+
+Step A: Create a VPC
+
+Define a CIDR block (e.g., 10.0.0.0/16 → provides ~65K private IPs).
+
+aws ec2 create-vpc --cidr-block 10.0.0.0/16
+
+Step B: Create Subnets
+
+Public Subnet (for web servers): 10.0.1.0/24
+
+Private Subnet (for database/app tier): 10.0.2.0/24
+
+aws ec2 create-subnet --vpc-id <vpc-id> --cidr-block 10.0.1.0/24 --availability-zone ap-south-1a
+aws ec2 create-subnet --vpc-id <vpc-id> --cidr-block 10.0.2.0/24 --availability-zone ap-south-1b
+
+Step C: Internet Gateway (IGW)
+
+Attach an IGW to the VPC so instances in public subnets can reach the internet.
+
+aws ec2 create-internet-gateway
+aws ec2 attach-internet-gateway --vpc-id <vpc-id> --internet-gateway-id <igw-id>
+
+Step D: Route Tables
+
+Public Route Table: route all internet traffic (0.0.0.0/0) → IGW.
+
+Private Route Table: only internal traffic (no direct IGW). Optionally, NAT Gateway for secure internet access.
+
+Example public route:
+
+aws ec2 create-route-table --vpc-id <vpc-id>
+aws ec2 create-route --route-table-id <rtb-id> --destination-cidr-block 0.0.0.0/0 --gateway-id <igw-id>
+
+
+Associate the route table with the public subnet.
+
+Step E: Security Groups
+
+Web Server SG:
+
+Inbound: Allow HTTP (80) & HTTPS (443) from anywhere.
+
+Inbound: Allow SSH (22) only from your IP.
+
+Outbound: Allow all (default).
+
+DB SG (if database in private subnet):
+
+Inbound: Allow MySQL/Postgres only from Web Server SG.
+
+No inbound from internet.
+
+✅ At this point:
+
+Web servers live in public subnet, accessible via browser.
+
+Databases/app servers live in private subnet, accessible only internally.
+
+2. Securing Communication Between EC2 and the Internet
+Inbound Security
+
+Use least privilege rules in Security Groups:
+
+Only allow required ports (22, 80, 443).
+
+Restrict SSH access to your IP only.
+
+Use Network ACLs for an extra security layer (e.g., block malicious IP ranges).
+
+Outbound Security
+
+By default, SGs allow all outbound traffic — restrict this if needed (e.g., only 80/443).
+
+For private subnets, use a NAT Gateway:
+
+Instances can download updates (yum/apt) but are not directly accessible from the internet.
+
+Enable VPC Flow Logs to monitor all network traffic.
+
+Extra Hardening
+
+Use TLS/HTTPS for encrypted communication with clients.
+
+Use IAM Roles instead of storing credentials on EC2.
+
+Optionally place a Load Balancer (ALB) in the public subnet → forward traffic to EC2 in private subnets.
+
+✅ Summary:
+
+VPC: 10.0.0.0/16
+
+Subnets: 10.0.1.0/24 (public), 10.0.2.0/24 (private)
+
+IGW: attached for internet access
+
+Route Tables: public → IGW, private → NAT (if needed)
+
+SGs: restrict inbound to necessary ports, allow outbound selectively
+
+Security: use least privilege, TLS, NAT, VPC Flow Logs
